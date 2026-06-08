@@ -159,10 +159,11 @@ def _rk_pil_to_comfy_image(pil_image):
 
 def _rk_sam3_load_module(rel_name, file_name):
     import sys
+    import os
     import importlib.util
     import types
 
-    sam3_root = "/mnt/sdc1/apps/comfyui/custom_nodes/ComfyUI-SAM3"
+    sam3_root = os.path.dirname(os.path.abspath(__file__))
     package_name = "rk_sam3_external"
     nodes_name = package_name + ".nodes"
     if package_name not in sys.modules:
@@ -171,13 +172,13 @@ def _rk_sam3_load_module(rel_name, file_name):
         sys.modules[package_name] = pkg
     if nodes_name not in sys.modules:
         nodes_pkg = types.ModuleType(nodes_name)
-        nodes_pkg.__path__ = [sam3_root + "/nodes"]
+        nodes_pkg.__path__ = [sam3_root]
         sys.modules[nodes_name] = nodes_pkg
 
     full_name = nodes_name + "." + rel_name
     if full_name in sys.modules:
         return sys.modules[full_name]
-    spec = importlib.util.spec_from_file_location(full_name, sam3_root + "/nodes/" + file_name)
+    spec = importlib.util.spec_from_file_location(full_name, os.path.join(sam3_root, file_name))
     module = importlib.util.module_from_spec(spec)
     sys.modules[full_name] = module
     spec.loader.exec_module(module)
