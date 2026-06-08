@@ -1013,6 +1013,83 @@ class RK_SceneGraphComposer:
         return (build_composition("simple"), build_composition("horizontal"), build_composition("vertical"))
 
 
+class RK_SceneOverlay:
+    CATEGORY = "roka/sam3"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "scenegraph": ("STRING", {"multiline": True}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("overlay",)
+    FUNCTION = "overlay"
+
+    def overlay(self, image, scenegraph):
+        import numpy as np
+        import torch
+        from PIL import Image, ImageDraw, ImageFont
+
+        nodes = _rk_json_load(scenegraph, [])
+        if not isinstance(nodes, list):
+            nodes = []
+
+        img_arr = image[0].detach().cpu().numpy()
+        pil_image = Image.fromarray(np.clip(img_arr * 255.0, 0, 255).astype(np.uint8)).convert("RGB")
+        w, h = pil_image.size
+        base = pil_image.convert("RGBA")
+        draw = ImageDraw.Draw(base, "RGBA")
+        try:
+            font = ImageFont.load_default()
+        except Exception:
+            font = None
+
+        fg_color = (60, 220, 130, 255)
+        bg_color = (255, 185, 70, 255)
+        unknown_color = (120, 190, 255, 255)
+
+        def valid_bbox(box):
+            return isinstance(box, list) and len(box) == 4
+
+        def is_wrapper(node):
+            label = str(node.get("label") or "").strip().lower()
+            return label in {"foreground", "background"} and node.get("parent_id") is None
+
+        for node in nodes:
+            if not isinstance(node, dict) or is_wrapper(node):
+                continue
+            bbox = node.get("bbox")
+            if not valid_bbox(bbox):
+                continue
+            x1, y1, x2, y2 = [int(round(float(v))) for v in bbox]
+            x1 = max(0, min(w - 1, x1))
+            y1 = max(0, min(h - 1, y1))
+            x2 = max(0, min(w, x2))
+            y2 = max(0, min(h, y2))
+            if x2 <= x1 or y2 <= y1:
+                continue
+
+            foreground = node.get("foreground")
+            color = fg_color if foreground is True else bg_color if foreground is False else unknown_color
+            line_width = max(2, w // 512)
+            draw.rectangle([x1, y1, x2, y2], outline=color, width=line_width)
+
+            label = str(node.get("caption") or node.get("desc") or node.get("label") or "item").strip() or "item"
+            node_id = node.get("id", "?")
+            text = f"{node_id}: {label}"
+            tx, ty = x1 + 4, max(0, y1 + 4)
+            text_box_w = min(w - tx, max(80, min(420, len(text) * 7 + 12)))
+            draw.rectangle([tx - 2, ty - 2, tx + text_box_w, ty + 16], fill=(255, 255, 255, 220))
+            draw.text((tx, ty), text, fill=(0, 0, 0, 255), font=font)
+
+        arr = np.array(base.convert("RGB")).astype(np.float32) / 255.0
+        return (torch.from_numpy(arr).unsqueeze(0),)
+
+
 class RK_SceneGraphToIdeogram4Json:
     CATEGORY = "roka/sam3"
 
@@ -1317,6 +1394,7 @@ NODE_CLASS_MAPPINGS = {
     "RK_SceneGraphReducer": RK_SceneGraphReducer,
     "RK_SceneGraphSegments": RK_SceneGraphSegments,
     "RK_SceneGraphComposer": RK_SceneGraphComposer,
+    "RK_SceneOverlay": RK_SceneOverlay,
     "RK_SceneGraphToIdeogram4Json": RK_SceneGraphToIdeogram4Json,
     "RK_SceneGraphAsciiRenderer": RK_SceneGraphAsciiRenderer,
     "RK_SceneGraphRenderer": RK_SceneGraphRenderer,
@@ -1331,6 +1409,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RK_SceneGraphReducer": "RK SceneGraphReducer",
     "RK_SceneGraphSegments": "RK Scene Graph Segments",
     "RK_SceneGraphComposer": "RK SceneGraphComposer",
+    "RK_SceneOverlay": "RK SceneOverlay",
     "RK_SceneGraphToIdeogram4Json": "RK SceneGraphToIdeogram4Json",
     "RK_SceneGraphAsciiRenderer": "RK SceneGraphAsciiRenderer",
     "RK_SceneGraphRenderer": "RK Scene Graph Renderer",
