@@ -9,6 +9,17 @@ Roka provides nodes Scene Graph Analysis.  Contains nodes that will take a set o
 
 The nodes including SAM3-powered text segmentation, scene-graph extraction, and text post-processing helpers for prompt or metadata pipelines.
 
+## Examples
+
+The table below shows Ideogram V4 JSON-prompt renders produced from Roka scene-graph composition outputs. Rows that were replaced by the erroneous image safety-filter placeholder are intentionally omitted.
+
+| Source | Composition style | Ideogram V4 render | Render + overlay |
+|---|---|---|---|
+| Cave skylight | simple | ![Cave simple Ideogram V4 render](./docs/images/examples/cave-simple-render.png) | ![Cave simple scene graph overlay](./docs/images/examples/cave-simple-overlay.png) |
+| Cave skylight | horizontal | ![Cave horizontal Ideogram V4 render](./docs/images/examples/cave-horizontal-render.png) | ![Cave horizontal scene graph overlay](./docs/images/examples/cave-horizontal-overlay.png) |
+| Harbor panorama | simple | ![Harbor simple Ideogram V4 render](./docs/images/examples/harbor-simple-render.png) | ![Harbor simple scene graph overlay](./docs/images/examples/harbor-simple-overlay.png) |
+| Railway station | simple | ![Station simple Ideogram V4 render](./docs/images/examples/station-simple-render.png) | ![Station simple scene graph overlay](./docs/images/examples/station-simple-overlay.png) |
+
 ![Roka image understanding example](./docs/images/roka-intro-example.png)
 
 ## Prerequisites 
