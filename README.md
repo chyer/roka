@@ -66,3 +66,17 @@ Workflow file: [`workflows/workflow_scenegraph_ascii_tree.json`](./workflows/wor
 This workflow uses a Florence2 captioning pipeline, then passes the generated caption through **RK spaCy Filter**. The node extracts and filters parts of speech, such as nominal nouns, while allowing custom stop words or excluded terms. 
 
 > It is useful for turning verbose captions into a noun list for segmentation
+
+### Scene Graph Renderer
+
+![Scene Graph Renderer workflow](./docs/images/scene-graph-renderer-workflow.png)
+
+**RK Scene Graph Renderer** visualizes the scene graph back over the image/mask space. It renders the detected hierarchy and boxes so you can inspect whether the graph structure matches the source image before using it downstream.
+
+### Scene Graph Reducer
+
+![Scene Graph Reducer workflow](./docs/images/scenegraph-reducer-composer-workflow.png)
+
+![Scene Graph Reducer overlay](./docs/images/scenegraph-reducer-overlay.png)
+
+**RK SceneGraphReducer** trims a scene graph to a configurable depth, making large detections easier to compose, render, or pass into downstream prompt-building nodes. The reduced graph can then be visualized with **RK SceneOverlay** to confirm the kept objects and spatial labels.
