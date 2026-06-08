@@ -11,6 +11,12 @@ The nodes including SAM3-powered text segmentation, scene-graph extraction, and 
 
 ![Roka image understanding example](./docs/images/roka-intro-example.png)
 
+## Prerequisites 
+
+ * models :  models/sam3/sam3.pt 
+ * uv (for your virtualenvs) 
+ 
+
 ## Workflows
 
 ### RK Segmentation
