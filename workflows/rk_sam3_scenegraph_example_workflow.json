@@ -1,0 +1,249 @@
+{
+  "last_node_id": 10,
+  "last_link_id": 13,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        0,
+        120
+      ],
+      "widgets_values": [
+        "example.png",
+        "image"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "ImageScaleToTotalPixels",
+      "pos": [
+        300,
+        120
+      ],
+      "widgets_values": [
+        "lanczos",
+        1.0,
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "type": "LoadSAM3Model",
+      "pos": [
+        0,
+        420
+      ],
+      "widgets_values": [
+        "models/sam3/sam3.pt",
+        ""
+      ]
+    },
+    {
+      "id": 4,
+      "type": "RK_SAM3TextSegmentation",
+      "pos": [
+        620,
+        120
+      ],
+      "widgets_values": [
+        "sky, ground, person, animal",
+        0.2,
+        -1,
+        false
+      ]
+    },
+    {
+      "id": 5,
+      "type": "PreviewImage",
+      "pos": [
+        980,
+        0
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 6,
+      "type": "RK_SAM3SceneGraph",
+      "pos": [
+        980,
+        260
+      ],
+      "widgets_values": [
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 7,
+      "type": "RK_SceneGraphRenderer",
+      "pos": [
+        1320,
+        260
+      ],
+      "widgets_values": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": 8,
+      "type": "PreviewImage",
+      "pos": [
+        1660,
+        160
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 9,
+      "type": "RK_SceneGraph",
+      "pos": [
+        1660,
+        460
+      ],
+      "widgets_values": [
+        "",
+        "ideogram_yxyx",
+        0,
+        0
+      ]
+    },
+    {
+      "id": 10,
+      "type": "PreviewImage",
+      "pos": [
+        1980,
+        460
+      ],
+      "widgets_values": []
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      3,
+      0,
+      4,
+      0,
+      "SAM3_MODEL"
+    ],
+    [
+      3,
+      2,
+      0,
+      4,
+      1,
+      "IMAGE"
+    ],
+    [
+      4,
+      4,
+      1,
+      5,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      4,
+      3,
+      6,
+      0,
+      "STRING"
+    ],
+    [
+      6,
+      4,
+      0,
+      6,
+      1,
+      "MASK"
+    ],
+    [
+      7,
+      4,
+      2,
+      6,
+      2,
+      "STRING"
+    ],
+    [
+      8,
+      4,
+      0,
+      7,
+      0,
+      "MASK"
+    ],
+    [
+      9,
+      4,
+      3,
+      7,
+      1,
+      "STRING"
+    ],
+    [
+      10,
+      6,
+      0,
+      7,
+      2,
+      "STRING"
+    ],
+    [
+      11,
+      7,
+      0,
+      8,
+      0,
+      "IMAGE"
+    ],
+    [
+      12,
+      7,
+      1,
+      9,
+      0,
+      "STRING"
+    ],
+    [
+      13,
+      9,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "RK SAM3 SceneGraph example",
+      "bounding": [
+        -30,
+        -10,
+        2250,
+        760
+      ],
+      "color": "#3f789e",
+      "font_size": 24
+    }
+  ],
+  "config": {},
+  "extra": {
+    "notes": "Example: LoadImage -> ImageScaleToTotalPixels at 1MP -> RK_SAM3TextSegmentation using prompt list 'sky, ground, person, animal' -> RK_SAM3SceneGraph -> RK_SceneGraphRenderer -> RK_SceneGraph preview. Replace example.png with an uploaded image. LoadSAM3Model expects models/sam3/sam3.pt or provide HF token.",
+    "prompt_list": "sky, ground, person, animal",
+    "source": "roka RK SceneGraph nodes"
+  },
+  "version": 0.4
+}

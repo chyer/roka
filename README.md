@@ -1,2 +1,39 @@
-
 ![](./docs/images/logo.png)
+
+## Intro
+
+Roka provides ComfyUI nodes for image understanding workflows, including SAM3-powered text segmentation, scene-graph extraction, and text post-processing helpers for prompt or metadata pipelines.
+
+## Workflows
+
+### RK Segmentation
+
+![RK Segmentation workflow](./docs/images/rk-segmentation-workflow.png)
+
+Workflow file: [`workflows/rk_sam3_scenegraph_example_workflow.json`](./workflows/rk_sam3_scenegraph_example_workflow.json)
+
+This workflow loads an image, scales it, runs **RK SAM3 Multi Text Segmentation** with a comma-separated text prompt, and previews the resulting segmentation visualization. It is useful for quickly finding objects or regions such as “sky”, “ground”, and “person” and returning masks, boxes, JSON, and a visual overlay.
+
+### Scene Graph
+
+![Scene Graph workflow](./docs/images/scene-graph-workflow.png)
+
+Workflow file: [`workflows/RK_SAM3_SceneGraph.json`](./workflows/RK_SAM3_SceneGraph.json)
+
+This workflow extends SAM3 segmentation with **RK SAM3 Scene Graph** to convert detected masks and boxes into a simple object hierarchy. The ASCII output makes relationships easy to inspect or pass downstream.
+
+```text
+0
+├── [0] sky
+├── [1] ground
+└── [2] person
+    └── [3] person
+```
+
+### RK spaCy Filter
+
+![RK spaCy Filter workflow](./docs/images/rk-spacy-filter-workflow.png)
+
+Workflow file: [`workflows/workflow_scenegraph_ascii_tree.json`](./workflows/workflow_scenegraph_ascii_tree.json)
+
+This workflow uses a Florence2 captioning pipeline, then passes the generated caption through **RK spaCy Filter**. The node extracts and filters parts of speech, such as nominal nouns, while allowing custom stop words or excluded terms. It is useful for turning verbose captions into cleaner keyword lists for tagging, prompt building, or downstream enrichment.
