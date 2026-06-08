@@ -19,10 +19,10 @@ The table below shows Ideogram V4 JSON-prompt renders produced from Roka scene-g
 
 | Image | Composition style | Original image overlay | Rendered image overlay |
 |---|---|---|---|
-| Cave skylight | simple | ![Cave simple original overlay](./docs/images/examples/cave-simple-original-overlay.png) | ![Cave simple rendered overlay](./docs/images/examples/cave-simple-overlay.png) |
-| Cave skylight | horizontal | ![Cave horizontal original overlay](./docs/images/examples/cave-horizontal-original-overlay.png) | ![Cave horizontal rendered overlay](./docs/images/examples/cave-horizontal-overlay.png) |
-| Harbor panorama | simple | ![Harbor simple original overlay](./docs/images/examples/harbor-simple-original-overlay.png) | ![Harbor simple rendered overlay](./docs/images/examples/harbor-simple-overlay.png) |
-| Railway station | simple | ![Station simple original overlay](./docs/images/examples/station-simple-original-overlay.png) | ![Station simple rendered overlay](./docs/images/examples/station-simple-overlay.png) |
+| Cave skylight | simple | <img src="./docs/images/examples/cave-simple-original-overlay.png" alt="Cave simple original overlay" width="320"> | <img src="./docs/images/examples/cave-simple-overlay.png" alt="Cave simple rendered overlay" width="320"> |
+| Cave skylight | horizontal | <img src="./docs/images/examples/cave-horizontal-original-overlay.png" alt="Cave horizontal original overlay" width="320"> | <img src="./docs/images/examples/cave-horizontal-overlay.png" alt="Cave horizontal rendered overlay" width="320"> |
+| Harbor panorama | simple | <img src="./docs/images/examples/harbor-simple-original-overlay.png" alt="Harbor simple original overlay" width="320"> | <img src="./docs/images/examples/harbor-simple-overlay.png" alt="Harbor simple rendered overlay" width="320"> |
+| Railway station | simple | <img src="./docs/images/examples/station-simple-original-overlay.png" alt="Station simple original overlay" width="320"> | <img src="./docs/images/examples/station-simple-overlay.png" alt="Station simple rendered overlay" width="320"> |
 
 
 ## Prerequisites 
