@@ -853,6 +853,259 @@ class RK_SceneGraphSegments:
         return (_rk_json_dump(segments), _rk_json_dump(elements), _rk_json_dump(merged_elements))
 
 
+class RK_SceneGraphComposer:
+    CATEGORY = "roka/sam3"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "scenegraph": ("STRING", {"multiline": True}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING", "STRING", "STRING")
+    RETURN_NAMES = ("simple_composition", "horizontal_composition", "vertical_composition")
+    FUNCTION = "compose"
+
+    def compose(self, scenegraph):
+        import json as jsonlib
+
+        nodes = _rk_json_load(scenegraph, [])
+        if not isinstance(nodes, list):
+            nodes = []
+
+        source_nodes = [node for node in nodes if isinstance(node, dict)]
+        node_by_id = {node.get("id"): node for node in source_nodes}
+        children = {}
+        for node in source_nodes:
+            node_id = node.get("id")
+            parent = node.get("parent_id")
+            if parent in node_by_id and parent != node_id:
+                children.setdefault(parent, []).append(node_id)
+        for child_list in children.values():
+            child_list.sort()
+
+        def bbox_valid(box):
+            return isinstance(box, list) and len(box) == 4
+
+        def bbox_union(boxes):
+            valid = [[int(v) for v in box] for box in boxes if bbox_valid(box)]
+            if not valid:
+                return None
+            return [
+                min(box[0] for box in valid),
+                min(box[1] for box in valid),
+                max(box[2] for box in valid),
+                max(box[3] for box in valid),
+            ]
+
+        def label_union(items, fallback="background"):
+            labels, seen = [], set()
+            for node in items:
+                label = str(node.get("caption") or node.get("desc") or node.get("label") or "").strip()
+                if not label or label.lower() in {"foreground", "background"}:
+                    continue
+                key = label.lower()
+                if key not in seen:
+                    seen.add(key)
+                    labels.append(label)
+            return ", ".join(labels) if labels else fallback
+
+        def is_foreground_root(node):
+            label = str(node.get("label") or "").strip().lower()
+            return node.get("foreground") is True and (node.get("parent_id") is None or label == "foreground")
+
+        def is_background_root(node):
+            label = str(node.get("label") or "").strip().lower()
+            return node.get("foreground") is False and (node.get("parent_id") is None or label == "background")
+
+        foreground_roots = [node.get("id") for node in source_nodes if is_foreground_root(node)]
+        background_roots = [node.get("id") for node in source_nodes if is_background_root(node)]
+        if not foreground_roots:
+            foreground_roots = [node.get("id") for node in source_nodes if node.get("foreground") is True and node.get("parent_id") is None]
+        if not background_roots:
+            background_roots = [node.get("id") for node in source_nodes if node.get("foreground") is False and node.get("parent_id") is None]
+
+        background_root_set = set(background_roots)
+        background_items = [node for node in source_nodes if node.get("foreground") is False and node.get("id") not in background_root_set]
+        all_boxes = [node.get("bbox") for node in source_nodes if bbox_valid(node.get("bbox"))]
+        canvas = bbox_union(all_boxes) or [0, 0, 1, 1]
+        x1, y1, x2, y2 = canvas
+        width = max(1, x2 - x1)
+        height = max(1, y2 - y1)
+
+        def copy_foreground(out, id_map, next_id_ref):
+            def add_copy(old_id, parent_id):
+                old = node_by_id.get(old_id)
+                if not isinstance(old, dict):
+                    return None
+                new_id = next_id_ref[0]
+                next_id_ref[0] += 1
+                id_map[old_id] = new_id
+                copied = dict(old)
+                copied["id"] = new_id
+                copied["parent_id"] = parent_id
+                out.append(copied)
+                for child_id in children.get(old_id, []):
+                    child = node_by_id.get(child_id, {})
+                    if child.get("foreground") is True:
+                        add_copy(child_id, new_id)
+                return new_id
+
+            for root_id in sorted(foreground_roots):
+                add_copy(root_id, None)
+
+        def build_composition(mode):
+            out = []
+            id_map = {}
+            next_id_ref = [0]
+            copy_foreground(out, id_map, next_id_ref)
+
+            bg_id = next_id_ref[0]
+            next_id_ref[0] += 1
+            out.append({"id": bg_id, "label": "background", "bbox": None, "parent_id": None, "foreground": False})
+
+            def add_bg_node(label, items):
+                if not items:
+                    return
+                nonlocal_bg = next_id_ref[0]
+                next_id_ref[0] += 1
+                out.append({
+                    "id": nonlocal_bg,
+                    "label": label,
+                    "caption": label_union(items, label),
+                    "bbox": bbox_union([node.get("bbox") for node in items]),
+                    "parent_id": bg_id,
+                    "foreground": False,
+                    "source_ids": [node.get("id") for node in items],
+                })
+
+            if mode == "simple":
+                add_bg_node(label_union(background_items, "background"), background_items)
+            elif mode == "horizontal":
+                groups = [("upper third", []), ("middle third", []), ("lower third", [])]
+                for node in background_items:
+                    box = node.get("bbox")
+                    if not bbox_valid(box):
+                        continue
+                    cy = (float(box[1]) + float(box[3])) / 2.0
+                    rel = (cy - y1) / float(height)
+                    idx = 0 if rel < 1.0 / 3.0 else 1 if rel < 2.0 / 3.0 else 2
+                    groups[idx][1].append(node)
+                for label, items in groups:
+                    add_bg_node(label, items)
+            else:
+                groups = [("left third", []), ("middle third", []), ("right third", [])]
+                for node in background_items:
+                    box = node.get("bbox")
+                    if not bbox_valid(box):
+                        continue
+                    cx = (float(box[0]) + float(box[2])) / 2.0
+                    rel = (cx - x1) / float(width)
+                    idx = 0 if rel < 1.0 / 3.0 else 1 if rel < 2.0 / 3.0 else 2
+                    groups[idx][1].append(node)
+                for label, items in groups:
+                    add_bg_node(label, items)
+
+            return jsonlib.dumps(out, indent=2)
+
+        return (build_composition("simple"), build_composition("horizontal"), build_composition("vertical"))
+
+
+class RK_SceneGraphToIdeogram4Json:
+    CATEGORY = "roka/sam3"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "scenegraph": ("STRING", {"multiline": True}),
+            },
+            "optional": {
+                "mode": (["all", "foreground", "background", "leaves"], {"default": "all"}),
+                "megapixels": ("FLOAT", {"default": 1.0, "min": 0.01, "max": 64.0, "step": 0.01}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("elements_json",)
+    FUNCTION = "build"
+
+    def build(self, scenegraph, mode="all", megapixels=1.0):
+        import json as jsonlib
+        import math
+
+        nodes = _rk_json_load(scenegraph, [])
+        if not isinstance(nodes, list):
+            nodes = []
+        nodes = [node for node in nodes if isinstance(node, dict)]
+
+        node_by_id = {node.get("id"): node for node in nodes}
+        children = {}
+        for node in nodes:
+            node_id = node.get("id")
+            parent_id = node.get("parent_id")
+            if parent_id in node_by_id and parent_id != node_id:
+                children.setdefault(parent_id, []).append(node_id)
+
+        def valid_bbox(box):
+            return isinstance(box, list) and len(box) == 4
+
+        def is_wrapper(node):
+            label = str(node.get("label") or "").strip().lower()
+            return label in {"foreground", "background"} and node.get("parent_id") is None
+
+        all_boxes = [node.get("bbox") for node in nodes if valid_bbox(node.get("bbox"))]
+        if not all_boxes:
+            return (jsonlib.dumps([], indent=2),)
+
+        scene_x1 = min(float(box[0]) for box in all_boxes)
+        scene_y1 = min(float(box[1]) for box in all_boxes)
+        scene_x2 = max(float(box[2]) for box in all_boxes)
+        scene_y2 = max(float(box[3]) for box in all_boxes)
+        scene_w = max(1.0, scene_x2 - scene_x1)
+        scene_h = max(1.0, scene_y2 - scene_y1)
+
+        target_area = max(1.0, float(megapixels or 1.0) * 1_000_000.0)
+        aspect = scene_w / scene_h
+        canvas_w = math.sqrt(target_area * aspect)
+        canvas_h = canvas_w / aspect
+
+        def include_node(node):
+            if is_wrapper(node) or not valid_bbox(node.get("bbox")):
+                return False
+            if mode == "foreground":
+                return node.get("foreground") is True
+            if mode == "background":
+                return node.get("foreground") is False
+            if mode == "leaves":
+                return len(children.get(node.get("id"), [])) == 0
+            return True
+
+        def norm_x(value):
+            scaled = (float(value) - scene_x1) / scene_w * canvas_w
+            return max(0, min(1000, round(scaled / canvas_w * 1000)))
+
+        def norm_y(value):
+            scaled = (float(value) - scene_y1) / scene_h * canvas_h
+            return max(0, min(1000, round(scaled / canvas_h * 1000)))
+
+        elements = []
+        for node in nodes:
+            if not include_node(node):
+                continue
+            x1, y1, x2, y2 = node.get("bbox")
+            desc = str(node.get("caption") or node.get("desc") or node.get("label") or "item").strip() or "item"
+            elements.append({
+                "type": "obj",
+                "bbox": [norm_y(y1), norm_x(x1), norm_y(y2), norm_x(x2)],
+                "desc": desc,
+            })
+
+        return (jsonlib.dumps(elements, indent=2, ensure_ascii=False),)
+
+
 class RK_SceneGraphAsciiRenderer:
     CATEGORY = "roka/sam3"
 
@@ -1063,6 +1316,8 @@ NODE_CLASS_MAPPINGS = {
     "RK_SAM3SceneGraph": RK_SAM3SceneGraph,
     "RK_SceneGraphReducer": RK_SceneGraphReducer,
     "RK_SceneGraphSegments": RK_SceneGraphSegments,
+    "RK_SceneGraphComposer": RK_SceneGraphComposer,
+    "RK_SceneGraphToIdeogram4Json": RK_SceneGraphToIdeogram4Json,
     "RK_SceneGraphAsciiRenderer": RK_SceneGraphAsciiRenderer,
     "RK_SceneGraphRenderer": RK_SceneGraphRenderer,
 }
@@ -1075,6 +1330,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RK_SAM3SceneGraph": "RK SAM3 Scene Graph",
     "RK_SceneGraphReducer": "RK SceneGraphReducer",
     "RK_SceneGraphSegments": "RK Scene Graph Segments",
+    "RK_SceneGraphComposer": "RK SceneGraphComposer",
+    "RK_SceneGraphToIdeogram4Json": "RK SceneGraphToIdeogram4Json",
     "RK_SceneGraphAsciiRenderer": "RK SceneGraphAsciiRenderer",
     "RK_SceneGraphRenderer": "RK Scene Graph Renderer",
 }
