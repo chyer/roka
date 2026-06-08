@@ -2,10 +2,14 @@
 
 ## Intro
 
+![Roka image understanding example](./docs/images/roka-intro-example.png)
+
 Roka provides nodes Scene Graph Analysis.  Contains nodes that will take a set of segmentation masks and boxes and generates a scenegraph. The Scenegraph can be used for downstream tasks
  * Editing models (e.g Flux Klein, Qwen Image Edit) 
  * Debugging prompt comprehension 
  * Support Ideogram V4 prompting 
+
+
 
 The nodes including SAM3-powered text segmentation, scene-graph extraction, and text post-processing helpers for prompt or metadata pipelines.
 
@@ -20,7 +24,6 @@ The table below shows Ideogram V4 JSON-prompt renders produced from Roka scene-g
 | Harbor panorama | simple | ![Harbor simple Ideogram V4 render](./docs/images/examples/harbor-simple-render.png) | ![Harbor simple scene graph overlay](./docs/images/examples/harbor-simple-overlay.png) |
 | Railway station | simple | ![Station simple Ideogram V4 render](./docs/images/examples/station-simple-render.png) | ![Station simple scene graph overlay](./docs/images/examples/station-simple-overlay.png) |
 
-![Roka image understanding example](./docs/images/roka-intro-example.png)
 
 ## Prerequisites 
 
