@@ -2,7 +2,14 @@
 
 ## Intro
 
-Roka provides ComfyUI nodes for image understanding workflows, including SAM3-powered text segmentation, scene-graph extraction, and text post-processing helpers for prompt or metadata pipelines.
+Roka provides nodes Scene Graph Analysis.  Contains nodes that will take a set of segmentation masks and boxes and generates a scenegraph. The Scenegraph can be used for downstream tasks
+ * Editing models (e.g Flux Klein, Qwen Image Edit) 
+ * Debugging prompt comprehension 
+ * Support Ideogram V4 prompting 
+
+The nodes including SAM3-powered text segmentation, scene-graph extraction, and text post-processing helpers for prompt or metadata pipelines.
+
+![Roka image understanding example](./docs/images/roka-intro-example.png)
 
 ## Workflows
 
@@ -12,7 +19,7 @@ Roka provides ComfyUI nodes for image understanding workflows, including SAM3-po
 
 Workflow file: [`workflows/rk_sam3_scenegraph_example_workflow.json`](./workflows/rk_sam3_scenegraph_example_workflow.json)
 
-This workflow loads an image, scales it, runs **RK SAM3 Multi Text Segmentation** with a comma-separated text prompt, and previews the resulting segmentation visualization. It is useful for quickly finding objects or regions such as “sky”, “ground”, and “person” and returning masks, boxes, JSON, and a visual overlay.
+This workflow loads an image, scales it, runs **RK SAM3 Multi Text Segmentation** with a comma-separated text prompt, and previews the resulting segmentation visualization.
 
 ### Scene Graph
 
@@ -36,4 +43,6 @@ This workflow extends SAM3 segmentation with **RK SAM3 Scene Graph** to convert 
 
 Workflow file: [`workflows/workflow_scenegraph_ascii_tree.json`](./workflows/workflow_scenegraph_ascii_tree.json)
 
-This workflow uses a Florence2 captioning pipeline, then passes the generated caption through **RK spaCy Filter**. The node extracts and filters parts of speech, such as nominal nouns, while allowing custom stop words or excluded terms. It is useful for turning verbose captions into cleaner keyword lists for tagging, prompt building, or downstream enrichment.
+This workflow uses a Florence2 captioning pipeline, then passes the generated caption through **RK spaCy Filter**. The node extracts and filters parts of speech, such as nominal nouns, while allowing custom stop words or excluded terms. 
+
+> It is useful for turning verbose captions into a noun list for segmentation
