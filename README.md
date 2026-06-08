@@ -17,12 +17,12 @@ The nodes including SAM3-powered text segmentation, scene-graph extraction, and 
 
 The table below shows Ideogram V4 JSON-prompt renders produced from Roka scene-graph composition outputs. Rows that were replaced by the erroneous image safety-filter placeholder are intentionally omitted.
 
-| Source | Composition style | Ideogram V4 render | Render + overlay |
-|---|---|---|---|
-| Cave skylight | simple | ![Cave simple Ideogram V4 render](./docs/images/examples/cave-simple-render.png) | ![Cave simple scene graph overlay](./docs/images/examples/cave-simple-overlay.png) |
-| Cave skylight | horizontal | ![Cave horizontal Ideogram V4 render](./docs/images/examples/cave-horizontal-render.png) | ![Cave horizontal scene graph overlay](./docs/images/examples/cave-horizontal-overlay.png) |
-| Harbor panorama | simple | ![Harbor simple Ideogram V4 render](./docs/images/examples/harbor-simple-render.png) | ![Harbor simple scene graph overlay](./docs/images/examples/harbor-simple-overlay.png) |
-| Railway station | simple | ![Station simple Ideogram V4 render](./docs/images/examples/station-simple-render.png) | ![Station simple scene graph overlay](./docs/images/examples/station-simple-overlay.png) |
+| Image | Composition style | Original image | Original image overlay | Rendered image overlay |
+|---|---|---|---|---|
+| Cave skylight | simple | ![Cave original](./docs/images/examples/cave-original.png) | ![Cave simple original overlay](./docs/images/examples/cave-simple-original-overlay.png) | ![Cave simple rendered overlay](./docs/images/examples/cave-simple-overlay.png) |
+| Cave skylight | horizontal | ![Cave original](./docs/images/examples/cave-original.png) | ![Cave horizontal original overlay](./docs/images/examples/cave-horizontal-original-overlay.png) | ![Cave horizontal rendered overlay](./docs/images/examples/cave-horizontal-overlay.png) |
+| Harbor panorama | simple | ![Harbor original](./docs/images/examples/harbor-original.png) | ![Harbor simple original overlay](./docs/images/examples/harbor-simple-original-overlay.png) | ![Harbor simple rendered overlay](./docs/images/examples/harbor-simple-overlay.png) |
+| Railway station | simple | ![Station original](./docs/images/examples/station-original.png) | ![Station simple original overlay](./docs/images/examples/station-simple-original-overlay.png) | ![Station simple rendered overlay](./docs/images/examples/station-simple-overlay.png) |
 
 
 ## Prerequisites 
