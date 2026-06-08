@@ -1183,6 +1183,68 @@ class RK_SceneGraphToIdeogram4Json:
         return (jsonlib.dumps(elements, indent=2, ensure_ascii=False),)
 
 
+class RK_Ideogram4JsonPromptComposer:
+    CATEGORY = "roka/ideogram"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "elements_json": ("STRING", {"multiline": True}),
+            },
+            "optional": {
+                "background": ("STRING", {"multiline": True, "default": ""}),
+                "aesthetics": ("STRING", {
+                    "multiline": True,
+                    "default": "photorealistic editorial image, composition preserved from the source reference",
+                }),
+                "lighting": ("STRING", {
+                    "multiline": True,
+                    "default": "natural cinematic light matching the source composition",
+                }),
+                "photo": ("STRING", {"multiline": True, "default": "high quality realistic photograph"}),
+                "medium": ("STRING", {"multiline": True, "default": "photorealistic digital image"}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("json_prompt",)
+    FUNCTION = "compose"
+
+    def compose(
+        self,
+        elements_json,
+        background="",
+        aesthetics="photorealistic editorial image, composition preserved from the source reference",
+        lighting="natural cinematic light matching the source composition",
+        photo="high quality realistic photograph",
+        medium="photorealistic digital image",
+    ):
+        elements = _rk_json_load(elements_json, [])
+        if isinstance(elements, dict):
+            # Accept either a full prompt or a compositional_deconstruction object for convenience.
+            if isinstance(elements.get("compositional_deconstruction"), dict):
+                elements = elements["compositional_deconstruction"].get("elements", [])
+            else:
+                elements = elements.get("elements", [])
+        if not isinstance(elements, list):
+            elements = []
+
+        prompt = {
+            "style_description": {
+                "aesthetics": str(aesthetics or ""),
+                "lighting": str(lighting or ""),
+                "photo": str(photo or ""),
+                "medium": str(medium or ""),
+            },
+            "compositional_deconstruction": {
+                "background": str(background or ""),
+                "elements": elements,
+            },
+        }
+        return (_rk_json_dump(prompt),)
+
+
 class RK_SceneGraphAsciiRenderer:
     CATEGORY = "roka/sam3"
 
@@ -1396,6 +1458,7 @@ NODE_CLASS_MAPPINGS = {
     "RK_SceneGraphComposer": RK_SceneGraphComposer,
     "RK_SceneOverlay": RK_SceneOverlay,
     "RK_SceneGraphToIdeogram4Json": RK_SceneGraphToIdeogram4Json,
+    "RK_Ideogram4JsonPromptComposer": RK_Ideogram4JsonPromptComposer,
     "RK_SceneGraphAsciiRenderer": RK_SceneGraphAsciiRenderer,
     "RK_SceneGraphRenderer": RK_SceneGraphRenderer,
 }
@@ -1411,6 +1474,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RK_SceneGraphComposer": "RK SceneGraphComposer",
     "RK_SceneOverlay": "RK SceneOverlay",
     "RK_SceneGraphToIdeogram4Json": "RK SceneGraphToIdeogram4Json",
+    "RK_Ideogram4JsonPromptComposer": "RK Ideogram4 Json Prompt Composer",
     "RK_SceneGraphAsciiRenderer": "RK SceneGraphAsciiRenderer",
     "RK_SceneGraphRenderer": "RK Scene Graph Renderer",
 }
